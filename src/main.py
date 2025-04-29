@@ -34,8 +34,19 @@ def generate_page(from_path, template_path, dest_path, basepath):
     # Replace placeholders in the template
     template_content = template_content.replace("{{ Content }}", html_content)
     template_content = template_content.replace("{{ Title }}", title)
-    template_content = template_content.replace('href="/', f'href="{basepath}')
-    template_content = template_content.replace('src="/', f'src="{basepath}')
+    
+    # Normalize basepath - ensure it doesn't end with a slash
+    normalized_basepath = basepath.rstrip('/')
+    
+    # Fix all URL patterns
+    template_content = template_content.replace('href="/', f'href="{normalized_basepath}/')
+    template_content = template_content.replace('src="/', f'src="{normalized_basepath}/')
+    
+    # Fix URL patterns without quotes or with single quotes
+    template_content = template_content.replace('href=/', f'href={normalized_basepath}/')
+    template_content = template_content.replace('src=/', f'src={normalized_basepath}/')
+    template_content = template_content.replace("href='/", f"href='{normalized_basepath}/")
+    template_content = template_content.replace("src='/", f"src='{normalized_basepath}/")
     
     # Write the final HTML to the destination
     with open(dest_path, "w") as file:
