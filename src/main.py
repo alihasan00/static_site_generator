@@ -1,5 +1,4 @@
-import os
-import shutil
+import os, shutil, sys
 from markdown_block import markdown_to_html_node, extract_title
 
 def copy_static(from_path, to_path):
@@ -19,17 +18,7 @@ def process_static(from_path, to_path):
     os.makedirs(to_path, exist_ok=True)
     copy_static(from_path, to_path)
 
-def main():
-    process_static("static", "public")
-    
-    # Process the main index file
-    generate_page("content/index.md", 'template.html', 'public/index.html')
-    
-    # Process all other markdown files
-    extract_files()
-
-def generate_page(from_path, template_path, dest_path):
-    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+def generate_page(from_path, template_path, dest_path, basepath):
     with open(from_path) as file:
         markdown_content = file.read()
     with open(template_path) as file:
@@ -45,6 +34,8 @@ def generate_page(from_path, template_path, dest_path):
     # Replace placeholders in the template
     template_content = template_content.replace("{{ Content }}", html_content)
     template_content = template_content.replace("{{ Title }}", title)
+    template_content = template_content.replace('href="/', f'href="{basepath}')
+    template_content = template_content.replace('src="/', f'src="{basepath}')
     
     # Write the final HTML to the destination
     with open(dest_path, "w") as file:
@@ -61,19 +52,24 @@ def get_files(directory, arr):
             get_files(full_path, arr)
     return arr
 
-def extract_files():
+def extract_files(basepath):
     arr = []
     files = get_files("content", arr)
-    print(files)
-    
     # Process each file
     for file_path in files:
         # Determine the output path
-        output_path = file_path.replace("content/", "public/").replace(".md", ".html")
+        output_path = file_path.replace("content/", "doc/").replace(".md", ".html")
         # Ensure directory exists
         output_dir = os.path.dirname(output_path)
         os.makedirs(output_dir, exist_ok=True)
         # Generate page
-        generate_page(file_path, 'template.html', output_path)
+        generate_page(file_path, 'template.html', output_path, basepath)
+
+def main():
+    # Get basepath from command line arguments, default to '/'
+    basepath = sys.argv[1] if len(sys.argv) > 1 else '/'
+    
+    process_static("static", "doc")
+    extract_files(basepath)
 
 main()
