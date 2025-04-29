@@ -58,7 +58,7 @@ def extract_files(basepath):
     # Process each file
     for file_path in files:
         # Determine the output path
-        output_path = file_path.replace("content/", "doc/").replace(".md", ".html")
+        output_path = file_path.replace("content/", "docs/").replace(".md", ".html")
         # Ensure directory exists
         output_dir = os.path.dirname(output_path)
         os.makedirs(output_dir, exist_ok=True)
@@ -69,7 +69,7 @@ def main():
     # Get basepath from command line arguments, default to '/'
     basepath = sys.argv[1] if len(sys.argv) > 1 else '/'
     
-    process_static("static", "doc")
+    process_static("static", "docs")
     extract_files(basepath)
 
 main()
